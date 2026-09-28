@@ -1,17 +1,32 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <h1>Cookie Clicker</h1>
+  <h2>Your Score: {{ cookieCount }}</h2>
+  
+  
+  <CookieButton @click="cookieClick" />
+  <UpgradeList />
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+
+import CookieButton from './components/CookieButton.vue'
+import {useCookies} from './composables/PlayerScore.js'
+import UpgradeList from './components/UpgradeList.vue'
 
 export default {
   name: 'App',
   components: {
-    HelloWorld
+    
+    CookieButton,
+    UpgradeList
+    
+  },
+   setup() {
+    const { cookieCount, cookieClick, upgradeFactory } = useCookies()
+    return { cookieCount, cookieClick, upgradeFactory }
   }
 }
+
 </script>
 
 <style>
