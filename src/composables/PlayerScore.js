@@ -1,40 +1,55 @@
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
+import { useUsers } from './Users.js';
 
-const cookieCount = ref(parseInt(localStorage.getItem('cookieCount')) || 0);
-const cookieFactoryCount = ref(parseInt(localStorage.getItem('cookieFactoryCount')) || 1);
-const cookieAutoClickCount = ref(parseInt(localStorage.getItem('cookieAutoClickCount')) || 0);
+const { currentUser, isConnected, setScore, getLevel, levelUp } = useUsers();
+
+// Coût de départ de chaque upgrade (niveau 0)
+const upgrades = {
+    clickBooster: { baseCost: 200 },
+    autoClicker: { baseCost: 500 },
+};
+
+// Le score vient de l'utilisateur connecté
+const cookieCount = ref(currentUser.value ? currentUser.value.score : 0);
+
+// Quand on change d'utilisateur ou que son score est remis à zéro, on recharge son score
+watch(() => currentUser.value ? currentUser.value.score : 0, (score) => {
+    cookieCount.value = score;
+});
+
+
+watch(cookieCount, (score) => setScore(score));
+
+
 setInterval(() => {
-    cookieCount.value += cookieAutoClickCount.value;
-    localStorage.setItem('cookieCount',cookieCount.value.toString());
-
-}, 200);
+    if (isConnected.value) {
+        cookieCount.value += getLevel('autoClicker');
+    }
+}, 800);
 
 
 export function useCookies() {
+  // Click Booster : chaque niveau double les cookies par clic
   function cookieClick() {
-    cookieCount.value += 1 * cookieFactoryCount.value;
-    localStorage.setItem('cookieCount', cookieCount.value.toString());
+    cookieCount.value += getLevel('clickBooster')+1;
   }
-  function upgradeFactory(factoryCost) {
-    if (cookieCount.value >= factoryCost) {
-        cookieCount.value -= factoryCost;
-        cookieFactoryCount.value*=2;
-        localStorage.setItem('cookieCount', cookieCount.value.toString())
-        localStorage.setItem('cookieFactoryCount', cookieFactoryCount.value.toString())
-    }
 
-  }
-  function upgradeAutoClick(autoClickCost) {
-    if (cookieCount.value >= autoClickCost) {
-        cookieCount.value -= autoClickCost;
-        cookieAutoClickCount.value+=1;
-        localStorage.setItem('cookieCount', cookieCount.value.toString())
-        localStorage.setItem('cookieAutoClickCount', cookieAutoClickCount.value.toString())
-    }
-}
   
-  return { cookieCount, cookieClick, upgradeFactory, upgradeAutoClick }
+  function upgradeCost(name) {
+    
+    return upgrades[name].baseCost * Math.pow(2, getLevel(name));
+
+  }
+
+  function buyUpgrade(name) {
+    const cost = upgradeCost(name);
+    if (cookieCount.value >= cost) {
+        cookieCount.value -= cost;
+        levelUp(name);
+    }
+  }
+
+  return { cookieCount, cookieClick, getLevel, upgradeCost, buyUpgrade }
 
 
 }
-

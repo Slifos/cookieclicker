@@ -1,7 +1,11 @@
 <template>
 <div>
-    <UpgradeComponent imageSrc='/cursor.png' upgradeName="Click Booster" :upgradeCost="10" @click="upgradeFactory(10)" />
-    <UpgradeComponent imageSrc='/productive.png' upgradeName="Autoclicker" :upgradeCost="20" @click="upgradeAutoClick(20)" />
+    <UpgradeComponent v-for="upgrade in upgrades" :key="upgrade.name"
+        :imageSrc="upgrade.imageSrc"
+        :upgradeName="upgrade.upgradeName"
+        :upgradeCost="upgradeCost(upgrade.name)"
+        :level="getLevel(upgrade.name)"
+        @click="buyUpgrade(upgrade.name)" />
 </div>
 
 </template>
@@ -13,19 +17,12 @@ export default {
   name: 'UpgradeList',
   components: { UpgradeComponent },
   setup() {
-    const { upgradeFactory,upgradeAutoClick } = useCookies()
-    return { upgradeFactory, upgradeAutoClick }
-  },
-  data() {
-    return { upgrades: [
-    { id: 1, imageSrc: '/cursor.png', upgradeName: 'Click Booster', upgradeCost: 10 , upgradeFunction: this.upgradeFactory },
-    { id: 2, imageSrc: '/productive.png', upgradeName: 'Autoclicker', upgradeCost: 20 , upgradeFunction: this.upgradeAutoClick }
-    
-]} 
+    const { getLevel, upgradeCost, buyUpgrade } = useCookies()
+    const upgrades = [
+      { name: 'clickBooster', imageSrc: '/cursor.png', upgradeName: 'Click Booster' },
+      { name: 'autoClicker', imageSrc: '/productive.png', upgradeName: 'Autoclicker' },
+    ]
+    return { upgrades, getLevel, upgradeCost, buyUpgrade }
   }
 }
-
-
-
-
 </script>
